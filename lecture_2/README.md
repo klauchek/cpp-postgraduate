@@ -49,6 +49,25 @@ So, clang is right here. Explicit constructor can't be chosen. The result is OK.
 
 ## task 2: https://godbolt.org/z/W5vfr7o8G
 
+```
+#include <iostream>
+struct Foo {}; 
+struct Bar : Foo {};
+struct Baz : Foo {};
+struct X {
+    operator Bar() { 
+        std::cout << "Bar\n"; return Bar{}; 
+    } 
+    operator Baz() const { 
+        std::cout << "Baz\n"; return Baz{}; 
+    }
+};
+void foo(const Foo &f) {}
+int main() { 
+    foo(X{});
+} // Bar or Baz?
+```
+
 Based on 9.4.4
 
 A variable whose declared type is “reference to T” (9.3.4.3) shall be initialized.
