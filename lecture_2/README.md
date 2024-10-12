@@ -77,3 +77,4 @@ For direct-initialization, the permissible types for explicit conversion functio
 Both of operators are candidates. But they have different rank (12.2.4.3) because (12.2.4.3.3.2.6) there are less conversions for `X` object (it is needed to convert to const while calling `operator Baz()`) to call non-const method.
 
 So, this example doesn't have any ambiguity. Both of the compilers (clang and gcc) are right.
+ ![Screenshot](pics/compilation2.png)
