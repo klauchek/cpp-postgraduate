@@ -103,20 +103,22 @@ assign: lvalue ASSIGN expr        { $$ = ast::makeBinOpNode($1, ast::Operation::
 lvalue: lexpr                     {$$ = $1;}
         | mem_access              {$$ = $1;}
 ;
+lexpr:   ID                       {  $$ = GlobalNode->access($1); std::cout << "From term ID" << $1 << std::endl; }
+        | LBR                     {std::string Varname = "c"; $$ = GlobalNode->access(Varname); std::cout << "C\n";}
+        | RBR LBR                 {std::string Varname = "x"; $$ = GlobalNode->access(Varname); std::cout << "X\n";}
+;
 
 mem_access:  LBR expr RBR         { $$ = ast::makeMemAccessNode(std::nullopt, $2); std::cout << "mem access \n"; } //mem access
             | term LBR expr RBR   { $$ = ast::makeMemAccessNode($1, $3); std::cout << "mem access with base \n"; } //mem acces
 ;
 
-prvalue : NUMBER                  { $$ = ast::makeNumNode($1); std::cout << "NUMBER\n"; }
+prvalue : NUMBER                  { $$ = ast::makeNumNode($1); std::cout << "NUMBER " << $1 << "\n"; }
 ;
 
-lexpr:   ID                       { $$ = GlobalNode->access($1); std::cout << "ID\n"; }
-        | LBR                     {std::string Varname = "c"; $$ = GlobalNode->access(Varname); std::cout << "C\n";}
-        | RBR LBR                 {std::string Varname = "x"; $$ = GlobalNode->access(Varname); std::cout << "X\n";}
-;
 
-value : lexpr                     { $$ = GlobalNode->visible($1); std::cout << "lval from value\n"; }
+value : ID                     { $$ = GlobalNode->visible($1); if ($$ == nullptr) {throw std::runtime_error{"Not visible variable"};}; std::cout << "lval from value\n"; }
+        | LBR                    { std::string Varname = "c"; $$ = GlobalNode->visible(Varname); if ($$ == nullptr) {throw std::runtime_error{"Not visible variable"};}; std::cout << "lval from value\n"; }
+        | RBR LBR                { std::string Varname = "x"; $$ = GlobalNode->visible(Varname); if ($$ == nullptr) {throw std::runtime_error{"Not visible variable"};}; std::cout << "lval from value\n"; }
         | prvalue                 { $$ = $1; std::cout << "rval from value\n"; }
         | mem_access              { $$ = $1;}
 ;
@@ -126,12 +128,12 @@ expr: value                       { $$ = $1; std::cout << "value from expr\n";}
     | value MINUS expr            { $$ = ast::makeBinOpNode($1, ast::Operation::Minus, $3); std::cout << "lval MINUS expr\n"; }
 ;
 
-    term: ID                      { $$ = GlobalNode->visible($1); std::cout << "ID\n";
-                                          if (!$$) { std::cout << "Unvisible ID\n";}}
+term: ID                          { $$ = GlobalNode->visible($1); std::cout << "ID term\n";
+                                          if ($$ == nullptr) {throw std::runtime_error{"Not visible variable"};};}
     | LBR                         {std::string Varname = "c"; $$ = GlobalNode->visible(Varname); std::cout << "C\n";
-                                          if (!$$) { std::cout << "Unvisible ID\n";}}
+                                        if ($$ == nullptr) {throw std::runtime_error{"Not visible variable"};};}
     | RBR LBR                     {std::string Varname = "x"; $$ = GlobalNode->visible(Varname); std::cout << "X\n";
-                                          if (!$$) { std::cout << "Unvisible ID\n";}}
+                                        if ($$ == nullptr) {throw std::runtime_error{"Not visible variable"};};}
 ; 
 
 %%
